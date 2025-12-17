@@ -35,8 +35,6 @@ After completing this module, you will be able to:
 ## Additional Resources
 
 - [Glossary](./glossary.md): Key terms and definitions
-- [Quickstart Guide](../../specs/ros2-nervous-system/quickstart.md): High-level overview
-- [Specification](../../specs/ros2-nervous-system/spec.md): Detailed requirements
 
 ## Target Audience
 
