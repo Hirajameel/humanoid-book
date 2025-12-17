@@ -1,0 +1,28 @@
+# VLA System Configuration
+
+# OpenAI API Configuration
+openai:
+  api_key: ${OPENAI_API_KEY}
+  whisper_model: "whisper-1"
+  gpt_model: "gpt-4-turbo"
+  temperature: 0.3
+
+# Audio Configuration
+audio:
+  sample_rate: 16000
+  chunk_size: 1024
+  channels: 1
+  device_index: null  # Use default audio device
+
+# ROS 2 Configuration
+ros2:
+  node_name: "vla_system"
+  voice_command_topic: "/vla/voice_command"
+  action_plan_topic: "/vla/action_plan"
+  execution_status_topic: "/vla/execution_status"
+
+# Action Execution Configuration
+execution:
+  timeout_seconds: 30
+  max_retries: 3
+  feedback_rate: 1.0  # Hz

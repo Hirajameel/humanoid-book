@@ -1,0 +1,55 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.DS_Store
+.hypothesis/
+
+# Virtual Environment
+ENV/
+.venv
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+.vs/
+
+# ROS 2
+build/
+install/
+log/
+.develpace/
+*.lock
+
+# Secrets
+.env
+*.key
+*.pem
+*.crt
+*.cert
+
+# OS
+.DS_Store
+Thumbs.db

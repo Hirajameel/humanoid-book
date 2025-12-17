@@ -1,0 +1,392 @@
+openapi: 3.0.0
+info:
+  title: Vision-Language-Action (VLA) Integration API
+  description: API for integrating voice commands with robot actions through LLM cognitive planning
+  version: 1.0.0
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+paths:
+  /voice/commands:
+    post:
+      summary: Submit a voice command for processing
+      description: Accepts voice command input and initiates the VLA pipeline
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                audio_file:
+                  type: string
+                  format: binary
+                  description: Audio file containing the voice command
+                text_command:
+                  type: string
+                  description: Optional text command instead of audio
+                user_id:
+                  type: string
+                  description: Optional user identifier
+              required:
+                - audio_file
+      responses:
+        '201':
+          description: Voice command accepted and processing started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoiceCommandResponse'
+        '400':
+          description: Invalid request (missing required fields, unsupported audio format)
+        '500':
+          description: Internal server error during processing
+
+  /voice/commands/{command_id}:
+    get:
+      summary: Get status of a voice command
+      parameters:
+        - name: command_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Command status and details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VoiceCommand'
+        '404':
+          description: Command not found
+
+  /action-plans:
+    post:
+      summary: Generate an action plan from a text command
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                text_command:
+                  type: string
+                  description: Natural language command to convert to action plan
+                execution_context:
+                  $ref: '#/components/schemas/ExecutionContext'
+              required:
+                - text_command
+      responses:
+        '201':
+          description: Action plan generated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionPlan'
+        '400':
+          description: Invalid command or unable to generate plan
+        '500':
+          description: Error communicating with LLM
+
+  /action-plans/{plan_id}:
+    get:
+      summary: Get details of an action plan
+      parameters:
+        - name: plan_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Action plan details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ActionPlan'
+        '404':
+          description: Action plan not found
+
+  /action-plans/{plan_id}/execute:
+    post:
+      summary: Execute an action plan on the robot
+      parameters:
+        - name: plan_id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                simulation:
+                  type: boolean
+                  description: Whether to execute in simulation (default: true)
+                environment:
+                  type: string
+                  description: Specific environment to use (gazebo, isaac, real)
+      responses:
+        '200':
+          description: Execution started successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionResponse'
+        '400':
+          description: Invalid request or plan not ready for execution
+        '404':
+          description: Action plan not found
+
+  /robot/state:
+    get:
+      summary: Get current robot state
+      responses:
+        '200':
+          description: Current robot state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RobotState'
+        '500':
+          description: Error retrieving robot state
+
+  /health:
+    get:
+      summary: Check API health
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+
+components:
+  schemas:
+    VoiceCommand:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the voice command
+        text:
+          type: string
+          description: Transcribed text from the voice command
+        timestamp:
+          type: string
+          format: date-time
+          description: When the command was received
+        confidence:
+          type: number
+          format: float
+          description: Confidence score from speech recognition
+        status:
+          type: string
+          enum: [pending, processing, completed, failed]
+          description: Current status of the command
+        action_plan_id:
+          type: string
+          description: ID of the generated action plan (if created)
+      required:
+        - id
+        - text
+        - timestamp
+        - status
+
+    VoiceCommandResponse:
+      type: object
+      properties:
+        command_id:
+          type: string
+          description: ID of the created voice command
+        status:
+          type: string
+          description: Processing status
+        message:
+          type: string
+          description: Human-readable status message
+        estimated_completion:
+          type: string
+          format: date-time
+          description: Estimated time for processing completion
+
+    ActionPlan:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the action plan
+        command_id:
+          type: string
+          description: ID of the original voice command
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/ActionStep'
+        status:
+          type: string
+          enum: [planned, executing, completed, failed, cancelled]
+          description: Current execution status
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+        execution_context:
+          $ref: '#/components/schemas/ExecutionContext'
+      required:
+        - id
+        - command_id
+        - steps
+        - status
+        - created_at
+
+    ActionStep:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the action step
+        plan_id:
+          type: string
+          description: ID of the parent action plan
+        step_number:
+          type: integer
+          description: Position in the sequence of steps
+        action_type:
+          type: string
+          description: Type of action (navigation, manipulation, perception, etc.)
+        parameters:
+          type: object
+          description: Specific parameters for the action
+        dependencies:
+          type: array
+          items:
+            type: string
+          description: IDs of other steps this step depends on
+        timeout:
+          type: integer
+          description: Timeout in seconds
+        retry_count:
+          type: integer
+          description: Number of retries attempted
+      required:
+        - id
+        - plan_id
+        - step_number
+        - action_type
+        - parameters
+
+    RobotState:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the robot state
+        timestamp:
+          type: string
+          format: date-time
+          description: When the state was captured
+        position:
+          type: object
+          properties:
+            x:
+              type: number
+            y:
+              type: number
+            z:
+              type: number
+          description: 3D position coordinates
+        orientation:
+          type: object
+          properties:
+            x:
+              type: number
+            y:
+              type: number
+            z:
+              type: number
+            w:
+              type: number
+          description: Quaternion orientation
+        joint_states:
+          type: object
+          description: Current joint positions and velocities
+        battery_level:
+          type: number
+          minimum: 0
+          maximum: 100
+          description: Battery level percentage
+        active_sensors:
+          type: object
+          description: Status of active sensors
+        current_task:
+          type: string
+          description: Currently executing task ID
+      required:
+        - id
+        - timestamp
+        - position
+        - orientation
+        - battery_level
+
+    ExecutionContext:
+      type: object
+      properties:
+        environment:
+          type: string
+          enum: [simulation, real]
+          description: Whether executing in simulation or real environment
+        obstacles:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+              position:
+                type: object
+                properties:
+                  x:
+                    type: number
+                  y:
+                    type: number
+                  z:
+                    type: number
+          description: Detected obstacles in environment
+        constraints:
+          type: object
+          description: Movement or action constraints
+        feedback:
+          type: object
+          description: Sensor feedback during execution
+        timestamp:
+          type: string
+          format: date-time
+
+    ExecutionResponse:
+      type: object
+      properties:
+        execution_id:
+          type: string
+          description: Unique identifier for the execution
+        status:
+          type: string
+          enum: [started, in_progress, completed, failed]
+          description: Execution status
+        robot_state:
+          $ref: '#/components/schemas/RobotState'
+        message:
+          type: string
+          description: Human-readable status message
