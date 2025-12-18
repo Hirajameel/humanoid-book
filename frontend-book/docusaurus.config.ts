@@ -15,9 +15,10 @@ const config: Config = {
   },
 
   // Set the production url of your site here
-  url: 'https://your-vercel-project-url.vercel.app',
+  url: process.env.DEPLOYMENT_URL || 'https://humanoid-book.vercel.app',
   // Set the /<baseUrl>/ pathname under which your site is served
-  baseUrl: '/',
+  // For GitHub pages deployment, it should be '/repo-name/' or '/' for user pages
+  baseUrl: process.env.BASE_URL || '/',
 
   // For GitHub pages deployment.
   organizationName: 'humanoid-book', // Usually your GitHub org/user name.

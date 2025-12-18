@@ -26,16 +26,16 @@ This command generates static content into the `build` directory and can be serv
 
 ## Deployment
 
-Using SSH:
+### For Vercel Deployment
+The site is configured for Vercel deployment. Simply connect your GitHub repository to Vercel and the site will be automatically deployed.
+
+### For GitHub Pages Deployment
+The site is configured with a GitHub Actions workflow for automatic deployment to GitHub Pages. When you push to the main branch, the workflow will automatically build and deploy the site to GitHub Pages.
+
+If you need to deploy manually to GitHub Pages, you can set the appropriate environment variables:
 
 ```bash
-USE_SSH=true yarn deploy
+DEPLOYMENT_URL=https://humanoid-book.github.io BASE_URL=/humanoid-book/ yarn build
 ```
 
-Not using SSH:
-
-```bash
-GIT_USER=<Your GitHub username> yarn deploy
-```
-
-If you are using GitHub pages for hosting, this command is a convenient way to build the website and push to the `gh-pages` branch.
+Then deploy the contents of the `build` folder to your GitHub Pages branch.
