@@ -24,7 +24,7 @@ jobs:
         run: yarn install --frozen-lockfile
       - name: Build website
         env:
-          DEPLOYMENT_URL: https://humanoid-book.github.io
+          DEPLOYMENT_URL: https://hirajameel.github.io
           BASE_URL: /humanoid-book/
         run: yarn build
 

@@ -32,10 +32,6 @@ The site is configured for Vercel deployment. Simply connect your GitHub reposit
 ### For GitHub Pages Deployment
 The site is configured with a GitHub Actions workflow for automatic deployment to GitHub Pages. When you push to the main branch, the workflow will automatically build and deploy the site to GitHub Pages.
 
-If you need to deploy manually to GitHub Pages, you can set the appropriate environment variables:
+The site will be available at: https://hirajameel.github.io/humanoid-book/
 
-```bash
-DEPLOYMENT_URL=https://humanoid-book.github.io BASE_URL=/humanoid-book/ yarn build
-```
-
-Then deploy the contents of the `build` folder to your GitHub Pages branch.
+If you need to deploy manually to GitHub Pages, the site is already configured correctly for your GitHub Pages deployment.
